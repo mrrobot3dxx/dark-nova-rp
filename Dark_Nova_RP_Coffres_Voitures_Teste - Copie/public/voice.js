@@ -1,0 +1,35 @@
+export function setupVoice({api,getMe,toast}){
+ const panel=document.createElement('section');panel.id='voicePanel';panel.setAttribute('aria-label','Salon vocal');
+ panel.innerHTML='<button id="voiceJoin">🎙 Activer le vocal</button><button id="voiceMute" hidden>Couper mon micro</button><span id="voiceStatus" role="status">Micro désactivé · salon commun, 60 joueurs max.</span><div id="voiceAudio"></div>';
+ document.querySelector('.social').prepend(panel);
+ const join=panel.querySelector('#voiceJoin'),mute=panel.querySelector('#voiceMute'),status=panel.querySelector('#voiceStatus'),audioBox=panel.querySelector('#voiceAudio');
+ const quick=document.createElement('button');quick.id='voiceQuickButton';quick.type='button';quick.textContent='🎙 Activer le vocal';quick.setAttribute('aria-label','Activer le vocal');quick.setAttribute('aria-pressed','false');document.getElementById('world').parentElement.append(quick);quick.addEventListener('click',()=>{if(active)mute.click();else join.click();});
+ let local=null,active=false,joining=false,generation=0,heartbeat=null,members=[];const peers=new Map();
+ function report(message){status.textContent=message;quick.title=message;}
+ function render(){const enabled=active&&!!local?.getAudioTracks()[0]?.enabled;quick.disabled=joining;quick.textContent=joining?'🎙 Connexion…':active?(enabled?'🎙 Micro actif · Couper':'🔇 Micro coupé · Activer'):'🎙 Activer le vocal';quick.setAttribute('aria-label',active?(enabled?'Couper mon micro':'Réactiver mon micro'):'Activer le vocal');quick.setAttribute('aria-pressed',String(enabled));quick.dataset.state=active?(enabled?'on':'muted'):'off';join.textContent=active?'Quitter le vocal':'🎙 Activer le vocal';mute.hidden=!active;mute.textContent=local?.getAudioTracks()[0]?.enabled?'Couper mon micro':'Réactiver mon micro';if(active){const connected=[...peers.values()].filter(p=>p.pc.connectionState==='connected').length;report((local.getAudioTracks()[0]?.enabled?'🎙 Micro actif':'🔇 Micro coupé')+' · '+members.length+'/60 dans le salon · '+connected+' liaison(s) audio');}}
+ function removePeer(id){const peer=peers.get(id);if(!peer)return;peers.delete(id);peer.pc.onicecandidate=null;peer.pc.ontrack=null;peer.pc.onconnectionstatechange=null;peer.pc.close();peer.audio.srcObject=null;peer.audio.remove();}
+ function stop(message='Micro désactivé.'){generation++;active=false;joining=false;clearInterval(heartbeat);heartbeat=null;local?.getTracks().forEach(t=>t.stop());local=null;for(const id of [...peers.keys()])removePeer(id);members=[];join.disabled=false;render();report(message);}
+ async function leave(){stop();try{await api('voice',{action:'leave'});}catch{}}
+ async function send(to,signal){if(active)await api('voice',{action:'signal',to,signal});}
+ function makePeer(id){if(peers.has(id))return peers.get(id);const pc=new RTCPeerConnection({iceServers:[{urls:'stun:stun.l.google.com:19302'}]});const audio=document.createElement('audio');audio.autoplay=true;audio.controls=true;audio.setAttribute('aria-label','Voix de '+(members.find(p=>p.id===id)?.name||'joueur'));audioBox.append(audio);const peer={pc,audio,candidates:[],chain:Promise.resolve()};peers.set(id,peer);for(const track of local.getAudioTracks())pc.addTrack(track,local);
+ pc.onicecandidate=e=>{if(e.candidate)send(id,{type:'candidate',candidate:e.candidate.toJSON()}).catch(()=>report('Liaison vocale interrompue. Quitte puis réactive le vocal.'));};
+ pc.ontrack=e=>{audio.srcObject=e.streams[0]||new MediaStream([e.track]);audio.play().catch(()=>report('Clique sur Lecture dans le lecteur audio pour entendre ce joueur.'));};
+ pc.onconnectionstatechange=()=>{if(!active)return;if(pc.connectionState==='failed')report('Connexion audio impossible avec un joueur. Un relais TURN peut être nécessaire sur ce réseau.');else render();};
+ return peer;}
+ function sync(next=[]){members=next;if(!active)return;const self=getMe();if(!self){stop();return;}if(!joining&&!members.some(p=>p.id===self.id)){stop('Tu as quitté le salon ou la modération a coupé ton accès.');return;}
+ const ids=new Set(members.filter(p=>p.id!==self.id).map(p=>p.id));for(const id of [...peers.keys()])if(!ids.has(id))removePeer(id);
+ for(const id of ids){if(peers.has(id))continue;const peer=makePeer(id);if(self.id<id){peer.chain=peer.chain.then(async()=>{const offer=await peer.pc.createOffer();if(!active||peers.get(id)!==peer)return;await peer.pc.setLocalDescription(offer);await send(id,{type:'offer',sdp:peer.pc.localDescription.sdp});}).catch(()=>report('Échec de liaison. Quitte puis réactive le vocal.'));}}
+ render();}
+ function receive({from,signal}){if(!active||!local||!members.some(p=>p.id===from)||from===getMe()?.id)return;const peer=makePeer(from);peer.chain=peer.chain.then(async()=>{if(!active||peers.get(from)!==peer)return;const pc=peer.pc;
+ if(signal.type==='candidate'){if(pc.remoteDescription)await pc.addIceCandidate(signal.candidate);else peer.candidates.push(signal.candidate);return;}
+ if(signal.type==='offer'&&from>getMe().id)return;
+ await pc.setRemoteDescription({type:signal.type,sdp:signal.sdp});for(const c of peer.candidates.splice(0))await pc.addIceCandidate(c);
+ if(signal.type==='offer'){await pc.setLocalDescription(await pc.createAnswer());await send(from,{type:'answer',sdp:pc.localDescription.sdp});}
+ }).catch(()=>report('Échec de liaison audio. Quitte puis réactive le vocal.'));}
+ join.addEventListener('click',async()=>{if(active)return leave();if(!getMe())return toast('Connecte-toi pour rejoindre le vocal.');if(!window.isSecureContext||!navigator.mediaDevices?.getUserMedia||!window.RTCPeerConnection){report('Vocal disponible sur localhost ou sur un site HTTPS avec un navigateur compatible.');return;}
+ const attempt=++generation;join.disabled=true;joining=true;render();report('Autorise ton microphone pour rejoindre le salon vocal.');try{const media=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true},video:false});if(attempt!==generation){media.getTracks().forEach(t=>t.stop());return;}local=media;active=true;const result=await api('voice',{action:'join'});if(attempt!==generation)return;joining=false;sync(result.members);heartbeat=setInterval(async()=>{try{const data=await api('voice',{action:'ping'});if(active)sync(data.members);}catch{stop('Accès vocal interrompu. Réactive le vocal pour réessayer.');}},15000);render();}
+ catch(e){if(attempt===generation)stop(e.name==='NotAllowedError'?'Micro refusé : autorise-le dans les réglages du navigateur.':e.name==='NotFoundError'?'Aucun microphone détecté.':e.message||'Impossible d’activer le vocal.');}finally{if(attempt===generation){join.disabled=false;render();}}});
+ mute.addEventListener('click',()=>{if(local){const enabled=!local.getAudioTracks()[0]?.enabled;local.getAudioTracks().forEach(t=>t.enabled=enabled);render();}});
+ addEventListener('pagehide',()=>{stop();fetch('/api/voice',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'leave'}),keepalive:true}).catch(()=>{});});
+ return {sync,receive,stop};
+}

@@ -1,0 +1,6 @@
+Dark Nova RP - banque et ATM, edition 1
+Cinq distributeurs : Pole emploi (335,985), hopital (1310,175), Garage Central (980,2020), camp (2400,2368), mairie (3700,2020).
+Depot et retrait en dollars entiers du jeu, sans frais, a pied pres d'un ATM. Argent sur soi et solde bancaire affiches separement.
+Solde bancaire prive conserve dans le compte existant. Initialisation a zero des comptes anciens sans modifier leur argent en poche.
+Operations atomiques cote serveur, refus des soldes insuffisants et montants invalides, identifiant de requete et revision pour eviter les transferts repetes meme apres redemarrage.
+116 tests passes. Navigateur mobile/ordinateur : interaction, depot, retrait, menu et cinq destinations GPS sans erreur JS.
