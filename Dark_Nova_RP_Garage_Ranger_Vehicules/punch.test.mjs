@@ -1,0 +1,11 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';
+for(const folder of ['.','../nova-rp']){
+ test('Frappe : animation temporaire, diffusion et cadence '+folder,async()=>{
+ const {createGameServer}=await import(folder+'/server.mjs'),server=createGameServer({dataFile:null,moderatorIds:[]});await new Promise(r=>server.listen(0,'127.0.0.1',r));const base='http://127.0.0.1:'+server.address().port;const post=async(path,body={},token='')=>{const r=await fetch(base+'/api/'+path,{method:'POST',headers:{Cookie:'nova_session='+token},body:JSON.stringify(body)});return {status:r.status,data:await r.json(),token:r.headers.get('set-cookie')?.match(/nova_session=([^;]+)/)?.[1]};};const controller=new AbortController();
+ try{assert.equal((await post('punch')).status,401);const a=await post('register',{name:'Frappeur',email:'punch@example.com',password:'Punch-test-42'}),b=await post('register',{name:'Temoin',email:'observer@example.com',password:'Punch-test-42'});const events=await fetch(base+'/events',{headers:{Cookie:'nova_session='+b.token},signal:controller.signal});const reader=events.body.getReader();await reader.read();
+ let r=await post('punch',{facing:'right'},a.token);assert.equal(r.status,200);assert.equal(r.data.player.punch.facing,'right');const stream=await reader.read();assert.ok(new TextDecoder().decode(stream.value).includes('"facing":"right"'));assert.equal((await post('punch',{},a.token)).status,429);
+ await new Promise(r=>setTimeout(r,560));assert.equal((await post('session',{},a.token)).data.player.punch,null);await post('bicycle',{action:'take'},a.token);assert.equal((await post('punch',{},a.token)).status,403);
+ }finally{controller.abort();server.closeAllConnections();await new Promise(r=>server.close(r));}
+ });
+ test('Frappe : plusieurs poses puis retour au repos sans relancer le même coup '+folder,async()=>{const {punchFrame}=await import(folder+'/public/characters.js');const p={id:'punch-animation',punch:{id:1,facing:'left',ageMs:0}};assert.equal(punchFrame(p,1000).frame,0);assert.ok(punchFrame(p,1225).frame>0);assert.equal(punchFrame(p,1450),null);assert.equal(punchFrame(p,1800),null);p.punch={id:2,facing:'back',ageMs:30};assert.equal(punchFrame(p,2000).facing,'back');assert.equal(punchFrame(p,2450),null);});
+}

@@ -1,0 +1,4 @@
+import {drawCharacter} from './characters.js?v=people-1';
+export const natureBuyer={name:'Hugo',x:1370,y:1320,radius:75,prices:{wood:25,apple:15}};
+export function nearNatureBuyer(p){return !!(p&&!p.interior&&!p.vehicleId&&Math.hypot(p.x-natureBuyer.x,p.y-natureBuyer.y)<=natureBuyer.radius);}
+export function drawNatureBuyer(ctx,me){const {x,y}=natureBuyer;ctx.save();drawCharacter(ctx,{outfit:{style:'jacket',color:'#796752',pants:'#3d5260',shoes:'#514b40'},hair:'#665f55',beard:true,skin:'#d4ac8c'},x,y);ctx.fillStyle='#af925c';ctx.fillRect(x-10,y-40,20,6);ctx.fillStyle='#d0b57b';ctx.fillRect(x-13,y-35,26,3);ctx.fillStyle='#20382d';ctx.fillRect(x-100,y-68,200,25);ctx.textAlign='center';ctx.font='bold 12px system-ui';ctx.fillStyle='#e5f4bd';ctx.fillText('HUGO · BOIS & POMMES',x,y-52);if(nearNatureBuyer(me))ctx.fillText('PARLER · E',x,y+61);ctx.restore();}

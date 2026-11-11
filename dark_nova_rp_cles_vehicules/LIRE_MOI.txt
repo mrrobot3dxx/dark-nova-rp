@@ -1,0 +1,9 @@
+Dark Nova RP - Cles de vehicules
+
+1. Extraire le ZIP.
+2. Copier INSTALLER_CLES_VEHICULES.bat et installer_cles_vehicules.py directement dans dark-nova-rp, a cote de server.mjs et du dossier public.
+3. Double-cliquer sur INSTALLER_CLES_VEHICULES.bat. Python doit etre installe.
+4. Si SUCCES apparait, dans GitHub Desktop verifier les changements, Commit puis Push origin.
+5. Dans le jeu, descendre avec F, s'approcher de son vehicule et appuyer sur L ou le bouton cle.
+
+Le proprietaire peut toujours monter dans son vehicule verrouille. Les autres joueurs ne peuvent pas monter dedans. L'etat verrouille est sauvegarde dans le garage existant. Le volume Railway /app/data n'est pas modifie par l'installation.

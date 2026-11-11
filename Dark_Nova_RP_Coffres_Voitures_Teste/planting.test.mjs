@@ -1,0 +1,11 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {mkdtemp,writeFile,readFile,rm} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
+import {scryptSync} from 'node:crypto';
+for(const source of ['./server.mjs','../nova-rp/server.mjs'])test('Planter : policier, fournitures consommées et plant visible chez soi · '+source,async()=>{
+ const {createGameServer}=await import(source),dir=await mkdtemp(join(tmpdir(),'nova-plant-')),file=join(dir,'accounts.json'),password='Plant-test-password-42',salt='plant';await writeFile(file,JSON.stringify([{key:'officer',id:'officer',name:'Officer',salt,hash:scryptSync(password,salt,64).toString('hex'),x:230,y:320,money:500,career:'police',job:false,home:{id:'azur',until:Date.now()+3600000},supplies:{water:1,seed:1,pot:1}}]));
+ const server=createGameServer({dataFile:file,moderatorIds:[]});await new Promise(r=>server.listen(0,'127.0.0.1',r));const base='http://127.0.0.1:'+server.address().port;let token='';const post=async(path,body={})=>{const r=await fetch(base+'/api/'+path,{method:'POST',headers:{Cookie:'nova_session='+token},body:JSON.stringify(body)});return {status:r.status,data:await r.json(),token:r.headers.get('set-cookie')?.match(/nova_session=([^;]+)/)?.[1]};};
+ try{token=(await post('login',{name:'Officer',password})).token;await post('bicycle',{action:'take'});const planted=await post('cultivation',{action:'plant'});assert.equal(planted.status,200);assert.equal(planted.data.player.vehicleId,null);assert.equal(planted.data.player.career,'police');for(const id of ['pot','water','seed'])assert.equal(planted.data.supplies[id],0);assert.equal(planted.data.crops.length,1);assert.ok(planted.data.crops[0].readyAt>Date.now()+119000);await post('interior',{action:'enter',id:'azur'});assert.ok((await post('session')).data.player.interiorEquipment.some(e=>e.type==='plant'));assert.equal((await post('cultivation',{action:'plant'})).status,400);assert.equal((await post('cultivation',{action:'harvest',id:planted.data.crops[0].id})).status,409);assert.equal(JSON.parse(await readFile(file,'utf8'))[0].crops.length,1);}finally{server.closeAllConnections();await new Promise(r=>server.close(r));await rm(dir,{recursive:true,force:true});}
+});
