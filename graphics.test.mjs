@@ -6,7 +6,7 @@ for(const folder of ['.','../nova-rp'])test('Graphismes : bâtiments distincts, 
  try{const b=Object.freeze({name:'GARAGE NOVA',x:550,y:430,w:270,h:200,color:'#609c8b'});drawBuilding(ctx,b);const created=canvases;for(let frame=0;frame<20;frame++)drawBuilding(ctx,b);assert.equal(canvases,created,'Le décor ne doit pas être recalculé à chaque image');assert.equal(images,21);assert.equal(b.x,550);assert.equal(b.w,270);drawGround(ctx,{width:5520,height:4320});const tiles=canvases;drawGround(ctx,{width:5520,height:4320});assert.equal(canvases,tiles);assert.equal(new Set(['GARAGE NOVA','CAFÉ NOVA','HÔPITAL NOVA','COMMISSARIAT','VILLA DES PINS'].map(buildingStyle)).size,5);}finally{globalThis.document=previous;}
 });
 for(const folder of ['.','../nova-rp'])test('Personnage : animation en mouvement puis arrêt à pied '+folder,async()=>{
- const {characterMotion}=await import(folder+'/public/characters.js'),player={id:'animation-test'};assert.equal(characterMotion(player,100,100,1000).step,0);const moving=characterMotion(player,110,100,1100);assert.notEqual(moving.step,0);assert.equal(moving.look,1);assert.equal(characterMotion(player,110,100,1400).step,0);
+ const {characterMotion}=await import(folder+'/public/characters.js'),player={id:'animation-test-'+folder};assert.equal(characterMotion(player,100,100,1000).step,0);const moving=characterMotion(player,110,100,1100);assert.notEqual(moving.step,0);assert.equal(moving.look,1);assert.equal(characterMotion(player,110,100,1400).step,0);
 });
 
 for(const folder of ['.','../nova-rp'])test('Ville détaillée : décor stable, chaussées et entrées dégagées '+folder,async()=>{

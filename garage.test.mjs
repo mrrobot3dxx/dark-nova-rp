@@ -24,11 +24,17 @@ test('Garage : tarifs serveur, propriété, location, récupération et persista
   const visitor=await post('register',{name:'Visitor',email:'visitor@example.test',password});assert.equal((await post('garage',{action:'rent',type:'scooter'},visitor.token)).status,400,'le garage doit être à proximité');
   for(let i=0;i<4;i++){await new Promise(r=>setTimeout(r,150));await post('move',{dx:0,dy:1},visitor.token);}
   const entered=await post('vehicle',{},visitor.token);assert.ok(![own.id,rental.id].includes(entered.data.player?.vehicleId),'les véhicules privés ne peuvent pas être pris par un autre joueur');
+  const parked=await post('garage',{action:'store',type:'car'},token);
+  assert.equal(parked.status,200);
+  assert.equal(parked.data.garage.vehicles.find(v=>v.id===own.id).stored,true);
+  assert.equal((await post('garage',{action:'store',type:'car'},token)).status,409);
   assert.equal((await post('garage',{action:'retrieve',type:'car'},token)).status,200);
+  assert.equal((await post('garage',{action:'store',type:'car'},token)).status,200);
+
   await post('logout',{},token);await stop();
   let disk=JSON.parse(await readFile(dataFile,'utf8'));const saved=disk.find(a=>a.id===account.id);assert.equal(saved.money,440);assert.equal(saved.garage.length,2);
   saved.garage.find(v=>v.rentalUntil).rentalUntil=Date.now()-1;await writeFile(dataFile,JSON.stringify(disk));await start();
-  const back=await post('login',{name:'Pilote',password});const garage=await post('garage',{},back.token);assert.equal(garage.data.garage.vehicles.length,1);assert.equal(garage.data.garage.vehicles[0].id,own.id);assert.equal(garage.data.player.money,440);
+  const back=await post('login',{name:'Pilote',password});const garage=await post('garage',{},back.token);assert.equal(garage.data.garage.vehicles.length,1);assert.equal(garage.data.garage.vehicles[0].id,own.id);assert.equal(garage.data.garage.vehicles[0].stored,true);const unpark=await post('garage',{action:'retrieve',type:'car'},back.token);assert.equal(unpark.data.garage.vehicles[0].stored,false);assert.equal(garage.data.player.money,440);
   const again=await post('garage',{action:'rent',type:'scooter'},back.token);assert.equal(again.data.player.money,380);
   const returned=await post('garage',{action:'return',type:'scooter'},back.token);assert.equal(returned.data.garage.vehicles.length,1);assert.equal(returned.data.player.money,380,'pas de remboursement automatique');
  }finally{if(server?.listening)await stop();await rm(dir,{recursive:true,force:true});}

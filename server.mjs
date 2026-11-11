@@ -129,14 +129,14 @@ export function createGameServer({maintenance=process.env.MAINTENANCE_MODE==='1'
  const vehicles=[];
  for(const a of accounts.values())for(const v of a.garage||[])if(!v.rentalUntil||v.rentalUntil>Date.now())vehicles.push({...v,health:vehicleHealth(v),ownerId:a.id,driverId:null});
  const vehicleRadius={car:27,policecar:27,firetruck:36,quad:23,scooter:17};
- for(const vehicle of vehicles)if(blocked(vehicle.x,vehicle.y,vehicleRadius[vehicle.type]||17)){vehicle.x=425;vehicle.y=580;const account=[...accounts.values()].find(a=>a.id===vehicle.ownerId);const stored=account?.garage?.find(v=>v.id===vehicle.id);if(stored){stored.x=vehicle.x;stored.y=vehicle.y;dirty=true;}}
+ for(const vehicle of vehicles)if(!vehicle.stored&&blocked(vehicle.x,vehicle.y,vehicleRadius[vehicle.type]||17)){vehicle.x=425;vehicle.y=580;const account=[...accounts.values()].find(a=>a.id===vehicle.ownerId);const stored=account?.garage?.find(v=>v.id===vehicle.id);if(stored){stored.x=vehicle.x;stored.y=vehicle.y;dirty=true;}}
  const saveVehicle=vehicle=>{const owner=[...accounts.values()].find(a=>a.id===vehicle.ownerId);if(owner){owner.garage=vehicles.filter(v=>v.ownerId===owner.id&&v.type!=='bicycle').map(({driverId,...v})=>v);dirty=true;}};
  const damageVehicle=createVehicleDamage(vehicleDamageOptions);
  const repairs=createRepairs({accounts,vehicles,saveVehicle,save,persist});
  const expireRentals=()=>{for(let i=vehicles.length-1;i>=0;i--){const v=vehicles[i];if(v.rentalUntil&&v.rentalUntil<=Date.now()){for(const p of players.values())if(p.vehicleId===v.id)p.vehicleId=null;vehicles.splice(i,1);const a=[...accounts.values()].find(a=>a.id===v.ownerId);if(a){a.garage=(a.garage||[]).filter(item=>item.id!==v.id);dirty=true;}}}};
  const garageState=p=>({catalog:garage.catalog,rentalMinutes:garage.rentalMinutes,vehicles:vehicles.filter(v=>v.ownerId===p.id),money:p.money});
  const publicPlayer=p=>({outfitId:p.outfitId||'original',outfit:clothingCatalog.find(item=>item.id===p.outfitId)?.outfit||null,punch:p.punchAt&&Date.now()-p.punchAt<450?{id:p.punchAt,facing:p.punchFacing,ageMs:Math.max(0,Date.now()-p.punchAt)}:null,needs:p.needs,respawnAt:p.respawnAt||null,respawnInMs:needs.remaining(p),needsNotice:p.needsNotice||null,id:p.id,name:p.name,color:p.color,x:p.x,y:p.y,money:p.money,job:p.job,career:p.career,workActive:p.workActive,workObjectiveReached:!!p.workObjectiveReached,policeWeapon:p.career==='police'&&!!p.policeWeapon,ammo:p.career==='police'?(p.ammo||0):0,vehicleId:p.vehicleId||null,interior:p.interior||null,interiorEquipment:p.interior?[...accounts.values()].filter(a=>a.printer?.homeId===p.interior.id&&a.home?.id===p.interior.id&&a.home.until>Date.now()).map(a=>({type:'printer',canManage:a.id===p.id})).concat([...accounts.values()].filter(a=>a.home?.id===p.interior.id&&a.home.until>Date.now()).flatMap(a=>(a.crops||[]).filter(c=>c.homeId===p.interior.id).map(c=>({type:'plant',readyAt:c.readyAt,canManage:a.id===p.id})))):[],ix:p.ix,iy:p.iy,vehicleAccess:Object.keys(p.pickedVehicles||{}).filter(id=>(p.pickedVehicles[id]===true||p.pickedVehicles[id]>Date.now())),isModerator:isModerator(p),invincible:isModerator(p),cuffed:!!p.cuffs,cuffedUntil:p.cuffs?.until||null,cuffedBy:p.cuffs?.officerName||null});
- const broadcast=()=>{for(let i=vehicles.length-1;i>=0;i--)if(vehicles[i].type==='bicycle'&&![...players.values()].some(p=>p.id===vehicles[i].ownerId))vehicles.splice(i,1);const data=`data: ${JSON.stringify({players:[...players.values()].map(publicPlayer),vehicles,messages,voice:voiceState()})}\n\n`;for(const s of streams.values())s.write(data);};
+ const broadcast=()=>{for(let i=vehicles.length-1;i>=0;i--)if(vehicles[i].type==='bicycle'&&![...players.values()].some(p=>p.id===vehicles[i].ownerId))vehicles.splice(i,1);const data=`data: ${JSON.stringify({players:[...players.values()].map(publicPlayer),vehicles:vehicles.filter(v=>!v.stored),messages,voice:voiceState()})}\n\n`;for(const s of streams.values())s.write(data);};
  const banking=createBank({accounts,save,persist});
  const trading=createTrading({accounts,players,save,persist,markDirty:()=>{dirty=true;},notify:(id,message)=>{const target=[...players.values()].find(p=>p.id===id);const stream=target&&streams.get(target.token);if(stream)stream.write('event: trade\ndata: '+JSON.stringify({message})+'\n\n');}});
  const support=createSupport({accounts,players,streams,isModerator,markDirty:()=>{dirty=true;},persist});
@@ -328,7 +328,13 @@ export function createGameServer({maintenance=process.env.MAINTENANCE_MODE==='1'
       if(localParking)Object.assign(selected,localParking);p.money-=price;vehicles.push(selected);
      }else if(body.action==='retrieve'){
       selected=owned;if(!selected)return send(400,{error:'Tu ne possèdes pas ce modèle.'});if(selected.driverId)return send(409,{error:'Ce véhicule est actuellement conduit.'});
-      selected.x=['car','policecar'].includes(model.type)?425:model.type==='firetruck'?455:490;selected.y=model.type==='firetruck'?610:580;selected.driverId=null;if(localParking)Object.assign(selected,localParking);
+      selected.stored=false;selected.x=['car','policecar'].includes(model.type)?425:model.type==='firetruck'?455:490;selected.y=model.type==='firetruck'?610:580;selected.driverId=null;if(localParking)Object.assign(selected,localParking);
+     }else if(body.action==='store'){
+      selected=owned;if(!selected)return send(400,{error:'Tu ne possèdes pas ce modèle.'});
+      if(selected.stored)return send(409,{error:'Ce véhicule est déjà rangé.'});
+      if(selected.driverId)return send(409,{error:'Descends du véhicule avant de le ranger.'});
+      if(Math.hypot(selected.x-p.x,selected.y-p.y)>160)return send(400,{error:'Approche ton véhicule du garage pour le ranger.'});
+      selected.stored=true;
      }else if(body.action==='return'){
       const index=vehicles.findIndex(v=>v.ownerId===p.id&&v.type===model.type&&v.rentalUntil);
       if(index<0)return send(400,{error:'Aucune location à rendre pour ce modèle.'});for(const other of players.values())if(other.vehicleId===vehicles[index].id)other.vehicleId=null;vehicles.splice(index,1);
@@ -516,6 +522,28 @@ export function createGameServer({maintenance=process.env.MAINTENANCE_MODE==='1'
     }
     return send(200,{player:publicPlayer(p),market:illegalMarket,nearMarket,nearHome,inTrade,installRevision:account.installRevision||0,acknowledgedInstallations:(account.installOperations||[]).slice(-20).map(o=>o.requestId),expiredHome,canRenewLease:!!expiredHome&&!p.vehicleId&&(p.interior?p.interior.id===expiredHome.id:Math.hypot(p.x-expiredHome.x,p.y-expiredHome.y)<=90)&&![...accounts.values()].some(a=>a.id!==p.id&&a.home?.id===expiredHome.id&&a.home.until>Date.now()),homeAccessMessage:expiredHome?'Ton bail a expiré. Renouvelle-le ci-dessous pour continuer.':!activeHome?'Aucun bail actif. Loue un logement dans Résidences.':!nearHome?(p.interior?'Tu es en visite ou dans un autre logement. Ton logement privé est '+activeHome.name+'.':'Rejoins ton logement loué : '+activeHome.name+'.'):'Tu es bien dans ton logement : installation autorisée si tu possèdes les fournitures.',home:activeHome?{...activeHome,until:account.home.until}:null,printer:account.printer?{...account.printer,amount:Math.min(1000,Math.floor(Math.max(0,Math.min(Date.now(),account.home?.id===account.printer.homeId?account.home.until:account.printer.lastCollectedAt)-account.printer.lastCollectedAt)/60000)*60),cycleMs:60000,payout:60,capacity:1000}:null,crops:account.crops.map(c=>({...c,ready:c.readyAt<=Date.now()})),supplies:account.supplies,serverTime:Date.now()});
    }
+   if(url.pathname==='/api/trunk'){
+    const account=accounts.get(p.accountKey);
+    const eligible=vehicles.filter(v=>!v.stored&&v.ownerId===p.id&&['car','policecar','firetruck','quad'].includes(v.type));
+    const vehicle=(body.vehicleId?eligible.find(v=>v.id===body.vehicleId):null)||(body.vehicleId?[]:eligible).filter(v=>!v.driverId&&Math.hypot(v.x-p.x,v.y-p.y)<=85).sort((a,b)=>Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(b.x-p.x,b.y-p.y))[0];
+    if(!vehicle)return send(403,{error:'Ce coffre ne t’appartient pas, ou aucun véhicule personnel compatible n’est à proximité.'});
+    if(p.vehicleId||p.interior||p.cuffs||p.respawnAt||vehicle.driverId||Math.hypot(vehicle.x-p.x,vehicle.y-p.y)>85)return send(403,{error:'Descends et approche-toi à pied de ton véhicule stationné pour ouvrir le coffre.'});
+    account.supplies??={};vehicle.trunk??={};
+    const allowed=['repairkit',...bakery.catalog.map(item=>item.id),'axe','wood','apple','lockpick','printer','pot','seed','cbd','water','snack'];
+    const action=body.action;
+    if(action!==undefined){
+     if(!['deposit','withdraw'].includes(action)||typeof body.id!=='string'||!allowed.includes(body.id)||!Number.isSafeInteger(body.quantity)||body.quantity<1||body.quantity>100)return send(400,{error:'Objet ou quantité invalide.'});
+     const from=action==='deposit'?account.supplies:vehicle.trunk,to=action==='deposit'?vehicle.trunk:account.supplies;
+     if(!Number.isSafeInteger(from[body.id]||0)||(from[body.id]||0)<body.quantity)return send(409,{error:'Quantité insuffisante.'});
+     const occupied=Object.values(vehicle.trunk).reduce((sum,n)=>sum+(Number.isSafeInteger(n)&&n>0?n:0),0);
+     if(action==='deposit'&&occupied+body.quantity>40)return send(409,{error:'Coffre plein : maximum 40 objets.'});
+     if(!Number.isSafeInteger(to[body.id]||0)||(to[body.id]||0)>Number.MAX_SAFE_INTEGER-body.quantity)return send(409,{error:'Capacité de l’inventaire dépassée.'});
+     from[body.id]-=body.quantity;to[body.id]=(to[body.id]||0)+body.quantity;
+     if(!from[body.id])delete from[body.id];
+     saveVehicle(vehicle);dirty=true;persist();broadcast();
+    }
+    return send(200,{vehicleId:vehicle.id,vehicleName:vehicle.name,capacity:40,trunk:vehicle.trunk,supplies:account.supplies,message:action?(action==='deposit'?'Objet déposé dans le coffre.':'Objet récupéré du coffre.'):'Coffre ouvert.'});
+   }
    if(url.pathname==='/api/inventory'){
     const account=accounts.get(p.accountKey),catalog={repairkit:{name:'Kit de réparation',icon:'🧰',description:'Remet un véhicule à 100 %. Descends près de ton véhicule endommagé avant de l’utiliser.',usable:true,actionLabel:'Réparer mon véhicule'},...Object.fromEntries(bakery.catalog.map(item=>[item.id,{name:item.name,icon:item.icon,description:item.description,usable:true}])),axe:{name:'Hache',icon:'🪓',description:'Nécessaire pour couper du bois. Réutilisable : approche-toi d’un arbre au Bois de Nova.',usable:false},wood:{name:'Bois',icon:'🪵',description:'Ressource récoltée au Bois de Nova.',usable:false},apple:{name:'Pomme',icon:'🍎',description:'Restaure 20 de nourriture, 5 d’hydratation et 2 de vie.',usable:true},lockpick:{name:'Crochet de serrure RP',icon:'🗝️',description:'Objet fictif : utilise Crocheter près d’une voiture ou d’un logement. Un crochet consommé par tentative.',usable:false},printer:{name:'Imprimante à billets fictifs',icon:'🖨️',description:'À installer dans ton logement via Imprimante chez moi.',usable:false},pot:{name:'Pot de culture',icon:'🪴',description:'Pour une culture fictive dans ton logement.',usable:false},seed:{name:'Graine de CBD fictif',icon:'🌱',description:'Objet de jeu acheté au marché clandestin.',usable:false},cbd:{name:'Récolte de CBD fictif',icon:'🌿',description:'À revendre au marché clandestin.',usable:false},water:{name:"Bouteille d’eau",icon:'💧',description:'Restaure 40 d’hydratation.'},snack:{name:'Barre de céréales',icon:'🍫',description:'Restaure 35 de nourriture et 5 de vie.'}};
     account.supplies??={water:2,snack:2};let keyMessage='';
@@ -604,7 +632,7 @@ export function createGameServer({maintenance=process.env.MAINTENANCE_MODE==='1'
      if(!exit)return send(400,{error:'Pas assez de place pour descendre ici.'});
      p.x=exit.x;p.y=exit.y;p.vehicleId=null;current.driverId=null;
     }else{
-     const nearest=vehicles.filter(v=>!v.driverId&&(!v.ownerId||v.ownerId===p.id||(p.pickedVehicles?.[v.id]===true||p.pickedVehicles?.[v.id]>Date.now()))&&Math.hypot(v.x-p.x,v.y-p.y)<=75).sort((a,b)=>Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(b.x-p.x,b.y-p.y))[0];
+     const nearest=vehicles.filter(v=>!v.stored&&!v.driverId&&(!v.ownerId||v.ownerId===p.id||(p.pickedVehicles?.[v.id]===true||p.pickedVehicles?.[v.id]>Date.now()))&&Math.hypot(v.x-p.x,v.y-p.y)<=75).sort((a,b)=>Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(b.x-p.x,b.y-p.y))[0];
      if(!nearest)return send(400,{error:'Approche-toi d’une voiture ou d’un scooter libre (75 pas maximum).'});
      nearest.driverId=p.id;p.vehicleId=nearest.id;p.x=nearest.x;p.y=nearest.y;
     }
