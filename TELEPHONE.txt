@@ -1,0 +1,7 @@
+Dark Nova RP - edition telephone
+Interface plein ecran utile sur petits ecrans, menus Missions/Discussion/Options, boutons tactiles agrandis.
+Carte integree sur mobile, restauration de l'interface ordinateur au changement de largeur.
+Securisation des commandes lors de l'ouverture des menus ou du passage en arriere-plan.
+Verification Chrome avec toucher : 320x568, 390x844 et 844x390, deplacement reel, menus, message, carte, retour ordinateur, sans erreur JavaScript.
+106 tests du jeu passes et chargement des modules reverifie apres integration finale.
+Aucun compte de test cree en production, aucun transfert de donnees de joueur.

@@ -1,0 +1,4 @@
+Version en ligne : https://dark-nova-rp-production.up.railway.app
+Projet et service : voir Deploiement Dark Nova RP/deploiement-verifie.json
+Les sauvegardes en ligne sont maintenant les donnees principales. Ne pas ecraser le volume avec les anciens fichiers locaux.
+Le serveur local sur 3001 a ete arrete pour eviter des progressions divergentes.

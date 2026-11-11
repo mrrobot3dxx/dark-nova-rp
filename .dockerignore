@@ -1,0 +1,11 @@
+data
+node_modules
+.git
+.env
+.env.*
+*.log
+*.test.mjs
+*.zip
+*.bak
+README.md
+DEPLOIEMENT-RAILWAY.md
