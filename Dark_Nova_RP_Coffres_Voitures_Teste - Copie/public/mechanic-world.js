@@ -1,6 +1,0 @@
-import {drawCharacter} from './characters.js?v=people-1';
-export const mechanic={name:'Alex · Mécanicien',x:1650,y:1250,radius:75,price:100};
-export const nearMechanic=p=>!!(p&&!p.interior&&!p.vehicleId&&Math.hypot(p.x-mechanic.x,p.y-mechanic.y)<=mechanic.radius);
-export function drawMechanic(ctx,me){const {x,y}=mechanic;ctx.save();const box=(x,y,w,h,c)=>{ctx.fillStyle=c;ctx.beginPath();ctx.roundRect(x,y,w,h,3);ctx.fill();};drawCharacter(ctx,{outfit:{style:'jacket',color:'#436276',pants:'#293b4b',shoes:'#3a3d3b'},hair:'#4f3b2e',skin:'#c79c7a'},x,y);box(x-8,y-40,16,5,'#b99a65');box(x-7,y-36,19,2,'#d3b07a');box(x+19,y+8,25,15,'#a46552');box(x+27,y+4,9,5,'#b7bcb2');box(x-110,y-68,220,24,'#19303bee');ctx.textAlign='center';ctx.font='bold 11px system-ui';ctx.fillStyle='#e3eef7';ctx.fillText('ALEX · KITS DE RÉPARATION',x,y-53);if(nearMechanic(me))ctx.fillText('PARLER · E',x,y+48);ctx.restore();}
-
-export function drawRepairArea(ctx){ctx.save();ctx.fillStyle='#5d6a6c';ctx.beginPath();ctx.roundRect(1555,1175,190,160,12);ctx.fill();ctx.strokeStyle='#dacfa3';ctx.lineWidth=2;ctx.setLineDash([8,6]);ctx.strokeRect(1565,1185,170,140);ctx.setLineDash([]);ctx.beginPath();ctx.moveTo(1650,1280);ctx.lineTo(1650,1325);ctx.stroke();ctx.fillStyle='#30463e';ctx.font='bold 12px system-ui';ctx.textAlign='center';ctx.fillText('AIRE DE RÉPARATION',1650,1162);ctx.restore();}

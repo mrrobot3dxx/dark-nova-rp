@@ -1,2 +1,0 @@
-Place INSTALLER_MARCO.bat et installer_marco_armurerie.py dans le dossier dark-nova-rp, a cote de server.mjs et du dossier public. Lance INSTALLER_MARCO.bat. Puis Commit et Push origin dans GitHub Desktop.
-Marco : devant le commissariat, coordonnees (710,335), touche E. Pistolet RP : 500 $, 12 cartouches incluses. Recharges : 80 $ pour 12 cartouches. Tirs visuels sans degats. Les donnees joueurs restent sur le volume Railway.

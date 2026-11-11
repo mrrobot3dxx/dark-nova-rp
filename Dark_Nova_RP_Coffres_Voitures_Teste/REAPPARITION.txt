@@ -1,5 +1,0 @@
-Dark Nova RP - inconscience et reapparition
-Vie a zero : ecran noir sur mobile et ordinateur, personnage immobilise et actions bloquees cote serveur.
-Compte a rebours de cinq minutes, puis bouton Reapparaitre. Retour a l'hopital avec vie a 100, faim et soif a 75.
-Echeance sauvegardee dans le compte : reconnexion et redemarrage ne reinitialisent pas le delai. Argent et inventaire conserves.
-108 tests passes, verification navigateur des ecrans mobile/ordinateur et du bouton differe sans erreur JavaScript.
