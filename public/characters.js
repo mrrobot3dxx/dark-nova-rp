@@ -5,7 +5,7 @@ export function punchFrame(player,time){const punch=player.punch;if(!punch||!pla
 export function characterMotion(player,x,y,time){if(!player.id)return {step:0,bob:0,look:0,facing:'front'};let state=motion.get(player.id);if(!state){state={x,y,until:0,look:0,facing:'front'};motion.set(player.id,state);if(motion.size>256)motion.delete(motion.keys().next().value);}const dx=x-state.x,dy=y-state.y;if(Math.hypot(dx,dy)>.1){state.until=time+160;if(Math.abs(dx)>Math.abs(dy)){state.look=Math.sign(dx);state.facing=dx>0?'right':'left';}else if(Math.abs(dy)>.1){state.look=0;state.facing=dy<0?'back':'front';}state.x=x;state.y=y;}const moving=time<state.until;return {step:moving?Math.sin(time/85)*2.5:0,bob:moving?Math.abs(Math.sin(time/85))*.8:0,look:state.look,facing:state.facing};}
 function shade(hex,amount){const m=/^#([0-9a-f]{6})$/i.exec(hex);if(!m)return hex;return '#'+m[1].match(/../g).map(v=>Math.max(0,Math.min(255,parseInt(v,16)+amount)).toString(16).padStart(2,'0')).join('');}
 function paint(c,a,pose,facing,rider,attack=null){
- const {style,color,pants,shoes,skin,hair,hairStyle,beard}=a,back=facing==='back',side=facing==='left'?-1:facing==='right'?1:0,short=['polo','tshirt'].includes(style),step=pose*.72;
+ const {style,color,pants,shoes,skin,hair,hairStyle,beard,hat,hatColor,scarf}=a,back=facing==='back',side=facing==='left'?-1:facing==='right'?1:0,short=['polo','tshirt'].includes(style),step=pose*.72;
  if(side)c.scale(.85,1);
  const oval=(x,y,rx,ry,color)=>{c.fillStyle=color;c.beginPath();c.ellipse(x,y,rx,ry,0,0,Math.PI*2);c.fill();};
  const box=(x,y,w,h,color,r=2)=>{c.fillStyle=color;c.beginPath();c.roundRect(x,y,w,h,r);c.fill();};
@@ -32,6 +32,11 @@ function paint(c,a,pose,facing,rider,attack=null){
  if(style==='polo'&&!back){path([[-6,-14],[-1,-11],[-4,-7],[-8,-11]],shade(color,37));path([[6,-14],[1,-11],[4,-7],[8,-11]],shade(color,16));box(-.8,-11,1.6,10,shade(color,-24),.4);for(const yy of [-8,-5,-2])oval(0,yy,.55,.55,'#e4e3d4');box(4,-5,2,1.3,'#cfd9ca',.3);}
  if(style==='tshirt'){line([[-5,-13],[-3,-10],[3,-10],[5,-13]],shade(color,-26),1.3);if(!back){box(-4,-5,8,4,'#ffffff35',.7);line([[-3,-3],[3,-3]],'#ffffff80',.6);}}
  if(['suit','jacket'].includes(style)&&!back){path([[-4,-14],[4,-14],[4,12],[-4,12]],style==='suit'?'#e5e7df':'#abb6b1');path([[-5,-14],[-1,-7],[-5,1],[-9,-10]],shade(color,19));path([[5,-14],[1,-7],[5,1],[9,-10]],shade(color,-14));line([[0,-6],[0,13]],style==='jacket'?'#b4bcb6':'#25323d',.8);for(const xx of [-7,5]){box(xx,4,3.8,3,shade(color,-20),.7);line([[xx,4],[xx+3.8,4]],shade(color,20));}if(style==='suit')path([[0,-11],[1.5,-8],[1,4],[0,7],[-1,4],[-1.5,-8]],'#9c5960');}
+ // Winter outerwear: quilted panels, parka pockets and coat lapels.
+ if(style==='puffer'){for(const yy of [-7,-1,5,10])line([[-8,yy],[8,yy]],shade(color,-26),.9);line([[0,-12],[0,12]],shade(color,-36),1);for(const xx of [-13,11])line([[xx,-5],[xx,8]],shade(color,-23),1.2);}
+ if(style==='parka'){box(-9,9,18,8,shade(color,-9),2);for(const xx of [-8,5])box(xx,3,4,4,shade(color,-28),1);line([[0,-12],[0,16]],shade(color,-35),1);}
+ if(style==='coat'){path([[-6,-14],[0,-8],[-4,8],[-9,15]],shade(color,25));path([[6,-14],[0,-8],[4,8],[9,15]],shade(color,-24));for(const yy of [0,6])oval(2,yy,.7,.7,'#ddc5a5');}
+ if(scarf){path([[-8,-15],[8,-15],[9,-11],[5,-8],[-7,-9],[-9,-12]],scarf);if(!back){box(3,-10,4,13,shade(scarf,-15),1);line([[4,-8],[4,1]],shade(scarf,24),.7);}}
  // Smaller adult facial proportions, ears, jaw plane and directional profile.
  if(!(back&&style==='hoodie')){
  if(hairStyle==='long'&&style!=='hoodie'){c.fillStyle=grad(-9,-38,18,29,hair);c.beginPath();c.moveTo(-8,-29);c.bezierCurveTo(-10,-41,9,-41,8,-29);c.lineTo(10,-13);c.quadraticCurveTo(3,-12,0,-16);c.quadraticCurveTo(-4,-12,-10,-14);c.closePath();c.fill();}
@@ -48,13 +53,20 @@ function paint(c,a,pose,facing,rider,attack=null){
   c.fillStyle=grad(-7,-37,14,10,hair);c.beginPath();c.moveTo(hx-6.4,-27);c.lineTo(hx-6.8,-32);c.bezierCurveTo(hx-7,-40,hx+7,-39,hx+6.7,-32);c.lineTo(hx+6.3,-27);c.lineTo(hx+4.6,-31.7);c.quadraticCurveTo(hx+1,-30,hx-2,-33);c.lineTo(hx-4.7,-31);c.closePath();c.fill();line([[hx-4,-35],[hx,-36],[hx+3,-34.6]],shade(hair,27),.7);
  }
  }
+ // Bonnet d'hiver dessiné après les cheveux pour rester visible de face, profil et dos.
+ if(hat==='beanie'||hat==='pompon'){
+  const cap=hatColor||'#333b48';
+  c.fillStyle=grad(-8,-43,16,14,cap);c.beginPath();c.moveTo(-7,-32);c.lineTo(-7,-36);c.quadraticCurveTo(-6,-43,0,-43);c.quadraticCurveTo(7,-43,7,-36);c.lineTo(7,-32);c.closePath();c.fill();
+  box(-8,-35,16,4,shade(cap,-16),1.3);line([[-6,-33],[6,-33]],shade(cap,35),.8);
+  if(hat==='pompon')oval(0,-44,3.3,3.2,'#f2e7d6');
+ }
  if(attack){const extension=Math.sin(attack.frame/7*Math.PI),sign=facing==='left'?-1:1,front=facing==='front',rear=facing==='back',sx=sign*10,sy=-9,fx=front?sign*(12+extension*3):rear?sign*12:sign*(16+extension*26),fy=front?8+extension*22:rear?-12-extension*28:-5-extension*2,ex=sign*(17+extension*8),ey=front?5:rear?-15:-1;
   c.lineCap='round';line([[sx,sy],[ex,ey]],grad(-15,-10,30,30,color),8);line([[ex,ey],[fx,fy]],short?grad(ex,ey,10,15,skin):grad(-15,-10,30,30,color),6);oval(fx,fy,4.1,3.6,grad(fx-3,fy-3,7,7,skin));line([[fx-2,fy-1],[fx+1,fy-1]],shade(skin,-30),.6);
   if(extension>.65){const dx=front?0:rear?0:sign,dy=front?1:rear?-1:0;line([[fx+dx*7-dy*3,fy+dy*7+dx*3],[fx+dx*11-dy*3,fy+dy*11+dx*3]],'#e2e8d078',.8);}
  }
 }
 export function drawCharacter(ctx,player,x=player.x,y=player.y,{rider=false,time=globalThis.performance?.now()||0}={}){
- const attack=rider?null:punchFrame(player,time);const m=rider?{step:0,bob:0,facing:'front'}:characterMotion(player,x,y,time),outfit=player.outfit||{},a={style:outfit.style||'hoodie',color:outfit.color||player.color||'#c3f36a',pants:outfit.pants||'#283c51',shoes:outfit.shoes||'#edf0e9',skin:player.skin||'#d9a681',hair:player.hair||'#393331',hairStyle:player.hairStyle||'short',beard:!!player.beard},pose=Math.round(m.step),facing=attack?.facing||m.facing,key=JSON.stringify([a,pose,facing,rider,attack?.frame??null]);
+ const attack=rider?null:punchFrame(player,time);const m=rider?{step:0,bob:0,facing:'front'}:characterMotion(player,x,y,time),outfit=player.outfit||{},a={style:outfit.style||'hoodie',color:outfit.color||player.color||'#c3f36a',pants:outfit.pants||'#283c51',shoes:outfit.shoes||'#edf0e9',skin:player.skin||'#d9a681',hair:player.hair||'#393331',hairStyle:player.hairStyle||'short',beard:!!player.beard,hat:outfit.hat||null,hatColor:outfit.hatColor||null,scarf:outfit.scarf||null},pose=Math.round(m.step),facing=attack?.facing||m.facing,key=JSON.stringify([a,pose,facing,rider,attack?.frame??null]);
  ctx.save();ctx.translate(x,y-m.bob);
  if(globalThis.document?.createElement){let sprite=portraits.get(key);if(!sprite){sprite=document.createElement('canvas');sprite.width=attack?200:100;sprite.height=attack?200:180;const c=sprite.getContext('2d');c.scale(2,2);c.translate(sprite.width/4,sprite.height/4);paint(c,a,pose,facing,rider,attack);portraits.set(key,sprite);if(portraits.size>192)portraits.delete(portraits.keys().next().value);}ctx.drawImage(sprite,-sprite.width/4,-sprite.height/4,sprite.width/2,sprite.height/2);}else paint(ctx,a,pose,facing,rider,attack);
  ctx.restore();
