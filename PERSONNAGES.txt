@@ -1,7 +1,0 @@
-Dark Nova RP - personnages 2D, edition 1
-Proportions affineees, visages ombres, cheveux, mains, chaussures et tissus detailles.
-Marche avec mouvements opposes des bras/jambes, face/profil/dos et conservation de l'orientation a l'arret.
-Sprites calcules a double resolution et cache borne a 192 poses pour limiter les calculs sur telephone.
-Refonte commune pour joueurs, interieurs, essayage des sept tenues et commerçants (Sam, Leo, Alex, Nora, Dr Lea, Hugo, Milo).
-108 tests passes avant finitions visuelles puis dix controles cibles passes. Verification navigateur sur trois formats de telephone, sans erreur JS.
-Argent, inventaire, tenues achetees et sauvegardes conserves.

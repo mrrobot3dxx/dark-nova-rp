@@ -1,6 +1,0 @@
-Dark Nova RP - ville detaillee 2D, edition 3
-233 elements decoratifs : terrasses, jardinières, places, fontaines, bancs et jardins.
-Decors stables, rendu limite au champ de vision et cache borne a 40 tuiles.
-Routes et acces centraux controles, aucun changement de collision ou de sauvegarde.
-Validation : suite complete 105/106 puis les deux tests villas et six tests graphiques passes (echec transitoire bad port du test local).
-Apercus Canvas : Deploiement Dark Nova RP/ville-detaillee-centre.png et ville-detaillee-quartiers.png.

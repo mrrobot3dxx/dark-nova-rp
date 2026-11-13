@@ -1,5 +1,0 @@
-Dark Nova RP - edition graphique 2
-Textures et ombres de la ville, facades adaptees aux batiments, vegetation et vehicules detailles.
-Personnages animes, sols et mobilier interieur enrichis, interface plus lisible et barre de commandes defilante.
-104 tests valides. Verification visuelle sur mobile et ordinateur sans erreur de rendu.
-Comptes en ligne conserves dans le volume Railway existant, jamais recopies depuis les anciennes donnees locales.

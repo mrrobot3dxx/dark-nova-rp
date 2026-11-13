@@ -1,6 +1,0 @@
-Dark Nova RP - reapparition moderateur
-Bouton immediat sur l'ecran noir reserve aux moderateurs deja declares sur le serveur.
-Autorisation controlee cote serveur, reanimation de son propre personnage uniquement.
-Delai de cinq minutes conserve pour les joueurs ordinaires, meme si la requete tente d'usurper le role.
-Tests ciblés des autorisations, du délai, de la sauvegarde et du chargement passes.
-Verification navigateur des boutons joueur/moderateur, mobile et ordinateur, sans erreur JavaScript.
