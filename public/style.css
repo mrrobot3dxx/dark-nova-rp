@@ -158,3 +158,17 @@ header{height:auto;min-height:100px;flex-wrap:wrap;gap:12px;padding:18px 28px}.h
 @media(max-width:900px){.mobile-play #toast{bottom:calc(210px + env(safe-area-inset-bottom))}}
 
 #illegalMessage{padding:12px;border:1px solid #9db79b55;border-radius:8px;background:#244139;color:#eef5de;min-height:44px;line-height:1.5}#illegalMessage:empty{display:none}
+
+/* Solde personnel visible pendant le jeu (ordinateur et mobile). */
+.world .pocket-money{position:absolute;top:12px;right:12px;z-index:8;display:flex;flex-direction:column;align-items:flex-end;gap:2px;padding:9px 13px;border-radius:12px;background:rgba(9,31,25,.92);border:1px solid rgba(141,239,160,.65);box-shadow:0 4px 18px #0005;color:#e9ffe8;pointer-events:none;font-variant-numeric:tabular-nums}
+.world .pocket-money[hidden]{display:none}
+.pocket-money span{font-size:10px;letter-spacing:.09em;font-weight:800;color:#9ce6ad}
+.pocket-money strong{font-size:21px;line-height:1.2;color:#fff}
+@media(max-width:650px){.world .pocket-money{top:8px;right:8px;padding:6px 9px;border-radius:9px}.pocket-money span{font-size:9px}.pocket-money strong{font-size:16px}}
+
+.world .pocket-money{gap:7px}
+.world .bank-money{width:100%;padding-top:7px;border-top:1px solid rgba(141,239,160,.3);text-align:right}
+.world .bank-money[hidden]{display:none}
+.world .bank-money span{display:block;color:#a9d5ff;font-size:10px;letter-spacing:.08em;font-weight:800}
+.world .bank-money strong{display:block;font-size:18px;color:#fff;font-variant-numeric:tabular-nums}
+@media(max-width:650px){.world .bank-money strong{font-size:15px}.world .bank-money span{font-size:9px}}
