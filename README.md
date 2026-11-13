@@ -4,7 +4,7 @@ Jeu RP 2D multijoueur pour navigateur mobile et ordinateur. Node.js 20 ou supér
 
 ## Jouer
 
-Dans ce dossier : `npm start`, puis ouvrir http://localhost:3000.
+Ce dossier Dark Nova RP contient le projet complet et ses sauvegardes. Pour lancer : ouvrir PowerShell ici, puis exécuter `& '.\Lancer Dark Nova RP.ps1'`. Le jeu ouvre son serveur sur http://127.0.0.1:3001/. Une seule instance doit utiliser ce port. Autre possibilité : `npm start` sur le port 3000.
 Sur un téléphone connecté au même Wi-Fi, ouvrir `http://ADRESSE_IP_DU_PC:3000` si le pare-feu autorise le port. Créer un compte avec un pseudo unique (3 à 18 caractères) et un mot de passe de 10 à 128 caractères. Pour tester plusieurs comptes sur un même ordinateur, utiliser des profils de navigateur séparés : chaque navigateur partage son cookie de connexion entre ses onglets.
 
 ## Comptes et sauvegarde
@@ -30,9 +30,9 @@ Tarifs et solde validés côté serveur. Un exemplaire acheté par modèle et un
 
 ## Ville et résidences
 
-La carte mesure 5 520 × 4 320 unités, soit quatre fois la superficie de la version précédente. Les nouvelles avenues desservent les quartiers résidentiels au sud et à l’est. Les points roses de la mini-carte indiquent les résidences.
+La carte mesure 11 040 × 8 640 unités, soit quatre fois la superficie de la carte précédente (5 520 × 4 320). Les nouvelles avenues desservent les quartiers résidentiels au sud et à l’est. Les points roses de la mini-carte indiquent les résidences.
 
-H ou Résidences ouvre le catalogue, trié par distance. Pour louer ou résilier, rejoindre à pied le repère rose du logement (rayon de 90 unités). Un compte ne peut avoir qu’un bail actif ; un logement ne peut être loué qu’à un seul joueur. Studio Azur : 180 dollars du jeu pour 24 heures réelles. Les autres tarifs sont affichés dans le catalogue. Le paiement est unique, sans renouvellement automatique ; une résiliation anticipée ne rembourse pas le loyer. Les baux sont sauvegardés dans le compte et continuent à courir hors ligne. Les logements expirés redeviennent disponibles. Les intérieurs ne sont pas encore visitables.
+H ou Résidences ouvre le catalogue, trié par distance. Pour louer ou résilier, rejoindre à pied le repère rose du logement (rayon de 90 unités). Un compte ne peut avoir qu’un bail actif ; un logement ne peut être loué qu’à un seul joueur. Studio Azur : 180 dollars du jeu pour 24 heures réelles. Les autres tarifs sont affichés dans le catalogue. Le paiement est unique, sans renouvellement automatique ; une résiliation anticipée ne rembourse pas le loyer. Les baux sont sauvegardés dans le compte et continuent à courir hors ligne. Les logements expirés redeviennent disponibles. Les intérieurs sont visitables : B ou Entrer près de la porte, puis B ou Sortir pour revenir dehors. La villa est ouverte à tous ; les résidences nécessitent le bail actif du compte.
 
 ## Hébergement
 
@@ -75,6 +75,16 @@ Douze nouveaux bâtiments louables à l’est du centre : maisons, studios et lo
 
 La carte conserve 26 bâtiments physiques, un par type. Les services du centre restent à leurs repères ; les autres bâtiments sont espacés sur la carte. Les logements existants deviennent des appartements dans le bâtiment de leur type : leurs identifiants, loyers et équipements restent conservés. Le quartier des Lilas compte désormais trois bâtiments physiques (maison, studio et loft) pour ses douze logements.
 
+## Intérieurs visitables
+
+Villa Dark Nova : accès public près du repère (1690, 1386), à pied. Résidences : accès réservé au locataire avec bail actif, à la porte du logement. B / Entrer ouvre un intérieur meublé ; flèches ou commandes tactiles pour marcher ; B / Sortir ramène à la position extérieure. Dans Résidences, le bouton Entrer dans mon logement permet le même accès. Salon, chambre, cuisine et salle d’eau disposent de meubles solides. La villa est partagée entre visiteurs ; chaque logement possède son espace séparé. La position intérieure est temporaire ; une reconnexion ramène devant le logement. Les actions extérieures nécessitent de sortir ; l’inventaire et les activités du logement restent accessibles.
+
+## Dons et ventes entre joueurs
+
+Bouton Échanges dans la barre du haut. Les deux joueurs doivent être connectés, à pied, à 120 unités maximum et dans le même espace (ville ou même intérieur). Choisir un joueur et préparer puis confirmer un don en dollars du jeu. Les 100 derniers identifiants de don sont conservés sur le compte pour éviter les répétitions accidentelles.
+
+La vente porte sur les objets de stock de l’inventaire : eau, encas et fournitures fictives. Indiquer une quantité et un prix total, puis envoyer une offre nominative valable deux minutes. L’acheteur doit accepter explicitement le prix ; il peut refuser et le vendeur peut annuler. Le serveur revérifie proximité, solde et stock au moment de l’acceptation. Les deux comptes sont sauvegardés ensemble avant confirmation. Les clés, logements, véhicules, identité et équipements professionnels ne sont pas vendus par ce système. Les offres sont temporaires et disparaissent au redémarrage ; les transferts conclus sont sauvegardés.
+
 ## GPS
 
 N ou le bouton GPS ouvre la liste de tous les bâtiments, recherchable et triée par distance. Sélectionner une destination active le tracé vert dans la ville et la mini-carte, avec flèche et distance restante. Le calcul contourne les bâtiments en tenant compte du gabarit du véhicule ; descendre si le passage est trop étroit. Les coordonnées personnalisées permettent aussi de choisir un point libre extérieur. Le GPS garde la destination dans la session du navigateur et indique quand elle est atteinte. Il faut sortir des intérieurs pour suivre le guidage. Le bouton × arrête le GPS.
@@ -91,23 +101,10 @@ Horloge synchronisée avec le serveur et affichée en Europe/Paris, avec changem
 
 La météo suit un cycle de jeu de 30 minutes synchronisé sur l’heure serveur : 12 minutes d’éclaircies, 3 minutes de ciel couvert, 10 minutes de pluie puis 5 minutes de retour progressif aux éclaircies. Les gouttes et petites éclaboussures sont animées à l’extérieur uniquement, de jour comme de nuit. Un indicateur affiche la météo et le temps restant avant le prochain changement. Il s’agit d’une météo fictive commune aux joueurs, indépendante de la météo réelle de Paris.
 
-## Menottes de police
+## Organisation (version unique)
 
-Le métier Policier dispose du bouton Police ou de la touche P pour menotter et libérer un joueur proche. Les deux joueurs doivent être à pied, dans le même lieu, à 75 unités maximum et sans obstacle. Les menottes immobilisent le joueur et bloquent les actions physiques jusqu’à une libération manuelle par un policier ; le chat et le vocal restent disponibles. Un policier proche peut libérer le joueur. Aucun délai automatique : les menottes sont sauvegardées avec le compte et restent après une reconnexion ou un redémarrage du serveur. La déconnexion du policier ne les retire pas. Un policier proche utilise Libérer ce joueur pour les enlever.
+Les anciennes versions `nova-rp` et `Dark Nova RP` ont été fusionnées le 2026-11-09 en un seul dossier. Le code est celui de `Dark Nova RP` (tests, échanges, villa, grande carte) ; `data/accounts.json` reprend les comptes les plus récents de `nova-rp`. Les anciens fichiers de comptes sont dans `data/sauvegardes/`. Lancer avec `Lancer Dark Nova RP.ps1` ou `npm start`. Tester avec `npm test`.
 
-## Changement de métier
+## Graphismes
 
-Une mission en cours bloque le choix d’un autre métier ; le Pôle emploi affiche maintenant cette raison et propose Abandonner la mission sans salaire. L’abandon est explicite et ne modifie pas le solde. Le choix d’un métier peut se faire en arrivant à vélo ou en voiture, avec stationnement automatique. Les chargements sont limités à huit secondes et un bouton Actualiser les métiers permet de vérifier le dernier état. Un message confirme le métier enregistré.
-
-## Appeler un modérateur
-
-Le bouton Appeler un modo permet de décrire un problème et de suivre sa prise en charge. Les modérateurs reçoivent une alerte et peuvent répondre depuis leur panneau. Une demande reste enregistrée même sans modérateur connecté. Un seul appel ouvert par joueur ; accessible aussi en étant menotté.
-
-
-## Porte du logement
-
-Bouton 🔑 Ma porte : le locataire peut ouvrir aux visiteurs ou fermer et verrouiller depuis son logement ou à pied près de sa porte. Les logements sont verrouillés par défaut et le réglage est sauvegardé avec le bail. Ouvrir autorise les autres joueurs proches à entrer dans le même intérieur. Verrouiller bloque les nouvelles entrées ; les invités présents gardent la possibilité de sortir. Un bail expiré ou résilié met fin à l’accès. Les villas de visite publique restent accessibles dans leur espace de visite distinct.
-
-## Crochets de serrure RP
-
-Boutique du marché clandestin : crochet fictif à 90 dollars du jeu. Bouton Crocheter près d’un véhicule privé garé ou du logement verrouillé d’un autre joueur, à pied et à moins de 70 unités. Chaque tentative consomme un crochet, prend 5 secondes sur place et réussit avec une probabilité de 60 %. Attendre 30 secondes entre les tentatives. Une réussite donne un accès personnel sans limite de temps ; le véhicule et le bail restent au propriétaire. Les objets d’un logement ne sont pas transférés. L’accès réussi est sauvegardé sur le compte et conservé à la reconnexion et au redémarrage ; les crochets achetés ou consommés sont sauvegardés.
+Le rendu de la ville est dans `public/graphics.js` (terrain, bâtiments, arbres, personnages animés, fontaine). Seule la zone visible de la carte est dessinée. Les fenêtres des bâtiments doivent rester alignées avec les lumières de nuit de `day-night.js` : un test le vérifie.

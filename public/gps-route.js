@@ -1,7 +1,6 @@
 export function createRouter(world,radius=20){
- const obstacles=[...world.buildings,...(world.obstacles||[])];
  const step=40,columns=Math.floor((world.width-40)/step)+1,rows=Math.floor((world.height-40)/step)+1,total=columns*rows;
- const blocked=(x,y)=>x<radius+5||y<radius+5||x>world.width-radius-5||y>world.height-radius-5||obstacles.some(b=>x>b.x-radius&&x<b.x+b.w+radius&&y>b.y-radius&&y<b.y+b.h+radius);
+ const blocked=(x,y)=>x<radius+5||y<radius+5||x>world.width-radius-5||y>world.height-radius-5||world.buildings.some(b=>x>b.x-radius&&x<b.x+b.w+radius&&y>b.y-radius&&y<b.y+b.h+radius);
  const point=id=>({x:20+(id%columns)*step,y:20+Math.floor(id/columns)*step});
  const cache=new Int8Array(total);
  const free=id=>{if(!cache[id]){const p=point(id);cache[id]=blocked(p.x,p.y)?-1:1;}return cache[id]===1;};

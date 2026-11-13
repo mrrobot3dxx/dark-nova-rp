@@ -10,8 +10,6 @@ function render(){if(!world)return;content.replaceChildren();content.style.width
  for(const b of world.buildings){const el=document.createElement('div');el.className='map-building';el.style.left=b.x*scale+'px';el.style.top=b.y*scale+'px';el.style.width=b.w*scale+'px';el.style.height=b.h*scale+'px';el.style.borderColor=b.color;el.textContent=icon(b.name)+' '+b.name;el.title=b.name+(b.rentable?' · À louer':'');content.append(el);}
  for(const home of [...new Map(world.residences.map(h=>[h.x+','+h.y,h])).values()])pin(home.x,home.y,'⌂','#ffbce1');
  for(const [x,y,label] of [[455,700,'📦 DÉPÔT'],[800,335,'👮 ARMURERIE'],[680,990,'🚒 CASERNE'],[230,990,'💼 PÔLE EMPLOI'],[1150,630,'🕶️ MARCHÉ CLANDESTIN'],[world.rentalDistrict.centerX,world.rentalDistrict.y+45,'🏘️ QUARTIER DES LILAS']])pin(x,y,label);
- for(const atm of world.atms||[])pin(atm.x,atm.y,'🏧 ATM');
- if(world.caravanCamp)pin(world.caravanCamp.entrance.x,world.caravanCamp.entrance.y,'🏕️ CAMP DES VOYAGEURS');
  if(me)pin(me.x,me.y,'● TOI','#c3f36a');center(focus.x,focus.y);$('mapStatus').textContent='Glisse pour explorer · + / − pour zoomer · M ou Échap pour revenir au jeu';}
 function zoom(factor){focus=visibleFocus();scale=Math.max(.015,Math.min(.7,scale*factor));render();}
 $('zoomIn').addEventListener('click',()=>zoom(1.4));$('zoomOut').addEventListener('click',()=>zoom(1/1.4));
